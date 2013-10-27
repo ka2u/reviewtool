@@ -10,7 +10,7 @@ a code review tool for git branching model development
 ## Installation
 put the elisp directory in path.
 write init.el
-'''
+```
 (require 'reviewtool)
-'''
+```
 M-x reviewtool
