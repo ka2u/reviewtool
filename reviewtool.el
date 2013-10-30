@@ -93,7 +93,7 @@
          (file (progn (debug (string-match "[ab]/\\(.*\\)" name))
                       (match-string 1 name))))
     (if (file-exists-p file)
-        (find-file file)
+        (switch-to-buffer (find-file-other-window file))
       (mesage "%s" (concat "can't find file: " name)))))
 
 (defun reviewtool (path)
