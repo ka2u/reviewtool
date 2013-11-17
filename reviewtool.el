@@ -100,7 +100,6 @@
   "review tool"
   (interactive "DRepo Path:")
   (reviewtool:open-git-graph path)
-  (use-local-map reviewtool:graph-map)
   (setq major-mode 'reviewtool)
   (setq mode-name "reviewtool")
   (run-hooks 'reviewtol-hook))
