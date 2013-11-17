@@ -23,10 +23,13 @@
 
 ;;; Code:
 
-;;;##autoload
+(defvar reviewtool:path nil)
+(defvar reviewtool:current-dir nil)
 
 (defun reviewtool:execute-command (cmd)
-  (call-process-shell-command cmd nil t))
+  (if (not (file-remote-p reviewtool:path))
+      (call-process-shell-command cmd nil t)
+    (process-file-shell-command cmd nil t)))
 
 (defun reviewtool:in-git-repository-p ()
   (with-temp-buffer
@@ -60,9 +63,10 @@
       (when (zerop ret)
         (buffer-string)))))
 
-(defun reviewtool:open-git-graph (path)
-  (when (file-directory-p path)
-    (setq path (concat path "/"))
+(defun reviewtool:open-git-graph ()
+  (when (file-directory-p reviewtool:path)
+    (setq path (concat reviewtool:path "/"))
+    (setq reviewtool:current-dir default-direcotry)
     (setq default-directory path)
     (cond ((reviewtool:in-git-repository-p)
            (with-output-to-temp-buffer "*graph*" (princ (reviewtool:git-graph)))
@@ -73,11 +77,15 @@
              (define-key map "q" 'burry-buffer)
              (define-key map "\r" 'reviewtool:open-git-diff)
              (use-local-map map)))
-          (t (message "%s" (concat "this is not git repo : " path))))))
+          (t (message "%s" (concat "this is not git repo : " path))))
+    (setq default-directory reviewtool:current-dir))
 
 (defun reviewtool:open-git-diff ()
   (interactive)
   (let ((rev (thing-at-point 'word)))
+    (setq path (concat reviewtool:path "/"))
+    (setq reviewtool:current-dir default-direcotry)
+    (setq default-directory path)
     (with-output-to-temp-buffer "*git-diff*" (princ (reviewtool:git-diff rev)))
     (switch-to-buffer "*git-diff*")
     (let ((map (make-sparse-keymap)))
@@ -85,12 +93,13 @@
       (define-key map "p" 'previous-line)
       (define-key map "q" 'burry-buffer)
       (define-key map "\r" 'reviewtool:open-file)
-      (use-local-map map))))
+      (use-local-map map))
+    (setq default-directory reviewtool:current-dir)))
 
 (defun reviewtool:open-file ()
   (interactive)
   (let* ((name (thing-at-point 'filename))
-         (file (progn (debug (string-match "[ab]/\\(.*\\)" name))
+         (file (progn (string-match "[ab]/\\(.*\\)" name)
                       (match-string 1 name))))
     (if (file-exists-p file)
         (switch-to-buffer (find-file-other-window file))
@@ -99,7 +108,8 @@
 (defun reviewtool (path)
   "review tool"
   (interactive "DRepo Path:")
-  (reviewtool:open-git-graph path)
+  (setq reviewtool:path path)
+  (reviewtool:open-git-graph)
   (setq major-mode 'reviewtool)
   (setq mode-name "reviewtool")
   (run-hooks 'reviewtol-hook))
