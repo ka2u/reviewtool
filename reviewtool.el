@@ -78,7 +78,7 @@
              (define-key map "\r" 'reviewtool:open-git-diff)
              (use-local-map map)))
           (t (message "%s" (concat "this is not git repo : " path))))
-    (setq default-directory reviewtool:current-dir))
+    (setq default-directory reviewtool:current-dir)))
 
 (defun reviewtool:open-git-diff ()
   (interactive)
